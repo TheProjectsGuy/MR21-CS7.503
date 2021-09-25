@@ -1,0 +1,17 @@
+name: mr-cs7-503
+channels:
+  - open3d-admin
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8.0
+  - open3d
+  - numpy
+  - sympy
+  - matplotlib
+  - scipy
+  - pandas
+  - pylint
+  - jupyterlab
+  - pip:
+    - jupyter-http-over-ws
