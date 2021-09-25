@@ -1,0 +1,3 @@
+# Ignore the downloaded data
+/data.zip
+/data_pc_odom/
