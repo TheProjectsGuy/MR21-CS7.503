@@ -1,6 +1,9 @@
 # Ignore VSCode
 /.vscode/
 
+# Ignore test items
+/test*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
