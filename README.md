@@ -21,3 +21,5 @@ The assignments given out (for the course) are summarized in the table below
 | Assignment | Description |
 | :---- | :---- |
 | [Assignment 1](./Assignments/MR2021-Assignment-1/README.md) | Transformations and representations, basic Open3D, quaternions, euler angles, etc. |
+| [Assignment 2](./Assignments/MR2021-Assignment-2/README.md) | Data Representation and Point Cloud Operations, registration, occupancy maps |
+| [Assignment 3](./Assignments/MR2021-Assignment-3/README.md) | Non-linear least squares optimization, ICP (Procrustes Alignment) |
