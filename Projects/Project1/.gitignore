@@ -1,0 +1,4 @@
+# Ignore test
+/test/
+test_*.py
+test*.py
