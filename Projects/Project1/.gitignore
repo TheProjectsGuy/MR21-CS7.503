@@ -2,3 +2,5 @@
 /test/
 test_*.py
 test*.py
+# Ignore the Anaconda environment (global folder has it)
+anaconda-env.yml
