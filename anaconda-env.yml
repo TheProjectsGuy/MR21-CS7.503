@@ -18,4 +18,5 @@ dependencies:
   - pip:
     - jupyter-http-over-ws
     - jax[cpu]
+    - evo
     - nbconvert[webpdf]

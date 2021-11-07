@@ -31,4 +31,4 @@ The projects given out (for the course) are summarized in the table below
 
 | Projects | Description |
 | :---- | :---- |
-| [Project 1](./Projects/Project1/README.md) | `<TBD>` |
+| [Project 1](./Projects/Project1/README.md) | SLAM (Localization only) using non-linear least squares optimization, given the using pose-graph (smoothing). Includes Evo and G2O tutorial. |
