@@ -33,3 +33,9 @@ The projects given out (for the course) are summarized in the table below
 | Projects | Description |
 | :---- | :---- |
 | [Project 1](./Projects/Project1/README.md) | SLAM (Localization only) using non-linear least squares optimization, given the using pose-graph (smoothing). Includes Evo and G2O tutorial. |
+
+The following projects are in progress
+
+| Projects | Description |
+| :---- | :---- |
+| [Project 2](./Projects/Project-2/README.md) | Stereo, PnP, ICP and Bundle Adjustment |
