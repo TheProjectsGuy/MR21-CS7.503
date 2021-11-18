@@ -27,6 +27,8 @@ The assignments given out (for the course) are summarized in the table below
 
 The following assignments are in progress
 
+| Assignment | Description |
+| :---- | :---- |
 | [Assignment 4](./Assignments/MR2021-Assignment-4/README.md) | DLT and Fundamental matrix assignment |
 
 ### Projects
