@@ -38,4 +38,4 @@ The following projects are in progress
 
 | Projects | Description |
 | :---- | :---- |
-| [Project 2](./Projects/Project-2/README.md) | Stereo, PnP, ICP and Bundle Adjustment |
+| [Project 2](./Projects/Project2/README.md) | Stereo, PnP, ICP and Bundle Adjustment |
