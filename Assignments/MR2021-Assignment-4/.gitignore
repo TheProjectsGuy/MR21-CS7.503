@@ -3,3 +3,6 @@ q1/Zhangs/
 
 # Ignore the tests folder
 test/
+
+# Ignore the environment
+results/anaconda-env.yml
