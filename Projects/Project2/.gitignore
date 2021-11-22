@@ -1,2 +1,6 @@
 # Ignore the data folder
 data/
+# Ignore the test folder
+test/
+# Ignore environment file
+anaconda-env.yml
