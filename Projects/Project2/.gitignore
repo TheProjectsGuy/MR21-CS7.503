@@ -4,3 +4,6 @@ data/
 test/
 # Ignore environment file
 anaconda-env.yml
+
+# Ignore data downloaded for Bundle Adjustment
+questions/problem-*.bz2
