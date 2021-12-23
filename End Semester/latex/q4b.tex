@@ -1,0 +1,204 @@
+% !TeX root = q4.tex
+
+\subsection{Monocular SLAM}
+
+It is assumed that we have an algorithm that can extract features from images. Any corner detection algorithm that works on image gradients should also work. It is also assumed that there is no distortion in the images (we're using a simple pin-hole affine camera).
+
+\subsubsection*{Projection Matrix}
+
+The primary thing needed for this is to calibrate the camera and at least obtain the projection. If any image has many points not in a plane, this can be done using DLT algorithm, as seen through equations \ref{eq:q3-cam-proj-resolved} and \ref{eq:q3-dlt-equs}. RANSAC can also be used to estimate the true parameters better (after removing trivial solutions as outliers). This will return $\mathbf{P} = \mathbf{K R} [\mathbf{I} \mid -\mathbf{X}_O]$. We then perform a substitution on this and obtain $\mathbf{K}$, $\mathbf{R}$ and $\mathbf{X}_O$ as follows
+
+\begin{equation*}
+    \mathbf{P} = \mathbf{K R} \left [ \mathbf{I} \mid -\mathbf{X}_O \right ] = \left [ \mathbf{K R} \mid -\mathbf{K R} \, \mathbf{X}_O \right ] = \left [ \mathbf{H \mid h} \right ]
+\end{equation*}
+
+\begin{align}
+    \mathbf{X}_O = -\mathbf{H}^{-1} \mathbf{h}
+    &&
+    \mathbf{H}^{-1} = \left ( \mathbf{KR} \right )^{-1} = \mathbf{R}^{-1} \, \mathbf{K}^{-1} = \mathbf{R}^\top \, \mathbf{K}^{-1}
+\end{align}
+
+The QR Decomposition of $\mathbf{H}^{-1}$ will give $\mathbf{H}^{-1} = QR$ where $Q$ is an orthogonal matrix and $R$ is an upper / right triangular matrix. Matching from above, we obtain the matrices $\mathbf{R} = Q^\top$ and $\mathbf{K} = R^{-1}$. In the end, we at least have $\mathbf{P}$ (the projection matrix) and if things go well, have $\mathbf{K}$ (camera intrinsics), $\mathbf{R}$, and $\mathbf{X}_O$ (camera extrinsics).
+
+\subsubsection*{Bundle Adjustment}
+
+Instead of trying out anything we can set the whole thing as a \textit{huge} optimization problem of residuals. This takes the outputs of the feature extraction algorithm.
+
+Assuming that there are $m$ camera poses and $n$ points / pixels in each pose (with correspondences in the 3D scene). We need to estimate the $m$ camera projection matrices $\mathbf{P}_i$ and $n$ coordinates $\mathbf{X}_j$ (in $\mathbb{R}^3$), given those coordinates in the images (pixel coordinates). Each $\mathbf{P}$ is a $3, 4$ matrix ($12$ elements), each $\mathbf{X} = [X, Y, Z]$ is a point in 3D world and each $\mathbf{x} = [x, y]$ is a pixel in the image (pixel coordinates itself).
+
+By converting the homographic equation to geometric (bringing the scaling parameter $\lambda$) and then scaling everything to unit scaling factor (eliminating the $\lambda$ values), we get the following minimization problem
+
+\begin{align}
+    \rightarrow& L = \sum_{i=1}^m \sum_{j=1}^{n} \left \| \lambda_{ij} \mathbf{P}_i \mathbf{X}_j - \mathbf{x}_{ij} \right \|^2
+    \nonumber \\
+    \rightarrow& \underset{\mathbf{X}_j, \mathbf{P}_i}{\textup{argmin}} \sum_{i=1}^{m} \sum_{j=1}^{n} \left ( \left [ \frac{ \mathbf{P}_{i[1, :]}^\top \mathbf{X}_j }{ \mathbf{P}_{i[3, :]}^\top \mathbf{X}_j } - x_{ij} \right ]^2 + \left [ \frac{ \mathbf{P}_{i[2, :]}^\top \mathbf{X}_j }{ \mathbf{P}_{i[3, :]}^\top \mathbf{X}_j } - y_{ij} \right ]^2 \right )
+    \nonumber \\
+    \rightarrow& \underset{\mathbf{X}_j, \mathbf{P}_i}{\textup{argmin}} \sum_{i=1}^{m} \sum_{j=1}^{n} \left \| \frac{ \left ( \mathbf{P}_{i[1:2, :]}^\top \right )_{(2,4)} \left ( \mathbf{X}_j \right )_{(4, 1)} }{ \left ( \mathbf{P}_{i[3, :]}^\top \mathbf{X}_j \right )_{(1,1)} } - \left ( \mathbf{x}_{ij} \right )_{(2, 1)} \right \|^2_2 = \underset{\mathbf{X}_j, \mathbf{P}_i}{\textup{argmin}} \sum_{i=1}^{m} \sum_{j=1}^{n} \left \| \widehat{\mathbf{x}}_{ij} - \mathbf{x}_{ij}  \right \|_2^2
+    \label{eq:q4b-optim-prob}
+\end{align}
+
+Note that in the final optimization equation \ref{eq:q4b-optim-prob}, the points $\mathbf{X}$ are in homogeneous coordinates (shape $4, 1$ each) and the points $\mathbf{x}$ are pixel coordinates (shape $2, 1$). Also, note that the residual is then actually a two element vector (for every $i$ and $j$). One for $x$ and another for $y$ (in the image). We define the residual vector as
+
+\begin{align}
+    \mathbf{r}_1 = \begin{bmatrix}
+        \mathbf{\hat{x}}_{11} - \mathbf{x}_{11} = \begin{matrix}
+        \hat{x}_{11} - x_{11} \\
+        \hat{y}_{11} - y_{11}
+        \end{matrix} \\
+        \mathbf{\hat{x}}_{12} - \mathbf{x}_{12} = \begin{matrix}
+        \hat{x}_{12} - x_{12} \\
+        \hat{y}_{12} - y_{12}
+        \end{matrix} \\
+        \vdots \\
+        \mathbf{\hat{x}}_{1n} - \mathbf{x}_{1n} = \begin{matrix}
+        \hat{x}_{1n} - x_{1n} \\
+        \hat{y}_{1n} - y_{1n}
+        \end{matrix} \\
+        \end{bmatrix}_{2n, 1}
+    &&
+    \mathbf{r}_2 = \begin{bmatrix}
+        \mathbf{\hat{x}}_{21} - \mathbf{x}_{21} \\
+        \mathbf{\hat{x}}_{22} - \mathbf{x}_{22} \\
+        \vdots \\
+        \mathbf{\hat{x}}_{2n} - \mathbf{x}_{2n} \\
+        \end{bmatrix}_{2n, 1}
+    && \cdots &&
+    \mathbf{r}_m = \begin{bmatrix}
+        \mathbf{\hat{x}}_{m1} - \mathbf{x}_{m1} \\
+        \mathbf{\hat{x}}_{m2} - \mathbf{x}_{m2} \\
+        \vdots \\
+        \mathbf{\hat{x}}_{mn} - \mathbf{x}_{mn} \\
+        \end{bmatrix}_{2n, 1}
+    \nonumber    
+\end{align}
+
+The above equations give the residual vector for each image (there are $m$ images). We combine them as a single long vector as
+
+\begin{equation}
+    \mathbf{r} = \begin{bmatrix}
+        \mathbf{r}_1 \\ \mathbf{r}_2 \\ \vdots \\ \mathbf{r}_m \\
+        \end{bmatrix}_{2nm}
+    \label{eq:q4b-ba-residual}
+\end{equation}
+
+Note that the following short hand is used in the residual vector above
+
+\begin{align}
+    \mathbf{\hat{x}}_{ij} = \begin{bmatrix}
+        \hat{x}_{ij} = \frac{ \mathbf{P}_{i[1, :]}^\top \mathbf{X}_j }{ \mathbf{P}_{i[3, :]}^\top \mathbf{X}_j }
+        \\
+        \hat{y}_{ij} = \frac{ \mathbf{P}_{i[2, :]}^\top \mathbf{X}_j }{ \mathbf{P}_{i[3, :]}^\top \mathbf{X}_j }
+        \end{bmatrix}_{2, 1}
+    &&
+    \mathbf{x}_{ij} = \begin{bmatrix}
+        x_{ij} \\ y_{ij}
+        \end{bmatrix}_{2, 1}
+    \nonumber
+\end{align}
+
+Now that the residual is defined in equation \ref{eq:q4b-ba-residual}, we define the cost function as $F(\mathbf{k}) = \mathbf{r^\top r}$, where $\mathbf{k}$ contains all the parameters that are needed to be optimized. These are the $m$ projection matrices $\mathbf{P}_i$ (flattened, will be 12 elements each) and $n$ 3D points in the scene (3 elements per point). Hence, there are $12m+3n$ parameters that need to be optimized. Thus, the $\mathbf{k}$ vector is
+
+\begin{equation}
+    \mathbf{k}_{12m+3n} = \left [ 
+        \mathbf{P}_1 \;\; \mathbf{P}_2 \;\; \cdots
+        \underbrace{ \left (\mathbf{P}_i \right )_{1, 12} }_{\mathbf{P}_{i[1,:]}^\top, \mathbf{P}_{i[2,:]}^\top, \mathbf{P}_{i[3,:]}^\top}
+        \cdots \; \mathbf{P}_m \;
+        \mid \;
+        \mathbf{X}_1 \;\; \mathbf{X}_2 \; \cdots
+        \underbrace{ \mathbf{X}_j }_{X_j, Y_j, Z_j}
+        \cdots \; \mathbf{X}_n
+        \right ]^\top
+    \label{eq:q4b-ba-params-vect}
+\end{equation}
+
+Let's define some jacobians for short hand
+
+\begin{align}
+    \mathbf{J}_{ij_M} = \frac{\partial \hat{x}_{ij}}{\partial \mathbf{P}_i} = \left [ 
+        \frac{\partial \hat{x}_{ij}}{\partial P_{i_{11}}} \;\;
+        \frac{\partial \hat{x}_{ij}}{\partial P_{i_{12}}} \cdots
+        \frac{\partial \hat{x}_{ij}}{\partial P_{i_{34}}}
+        \right ]_{1, 12}
+    &&
+    \mathbf{J}_{ij_S} = \frac{\partial \hat{x}_{ij}}{\partial \mathbf{X}_j} = \left [ 
+        \frac{\partial \hat{x}_{ij}}{\partial X_{j}} \;\;
+        \frac{\partial \hat{x}_{ij}}{\partial Y_{j}} \;\;
+        \frac{\partial \hat{x}_{ij}}{\partial Z_{j}}
+        \right ]_{1, 3}
+    \nonumber \\
+    \mathbf{G}_{ij_M} = \frac{\partial \hat{y}_{ij}}{\partial \mathbf{P}_i} = \left [ 
+        \frac{\partial \hat{y}_{ij}}{\partial P_{i_{11}}} \;\;
+        \frac{\partial \hat{y}_{ij}}{\partial P_{i_{12}}} \cdots
+        \frac{\partial \hat{y}_{ij}}{\partial P_{i_{34}}}
+        \right ]_{1, 12}
+    &&
+    \mathbf{G}_{ij_S} = \frac{\partial \hat{y}_{ij}}{\partial \mathbf{X}_j} = \left [ 
+        \frac{\partial \hat{y}_{ij}}{\partial X_{j}} \;\;
+        \frac{\partial \hat{y}_{ij}}{\partial Y_{j}} \;\;
+        \frac{\partial \hat{y}_{ij}}{\partial Z_{j}}
+        \right ]_{1, 3}
+    \label{q4b-ba-jac-sh-defs}
+\end{align}
+
+Note that the jacobians $\mathbf{J}_{ij_M}$ and $\mathbf{G}_{ij_M}$ are for \emph{motion} (because they embed how the camera is moving in the scene) and that the jacobians $\mathbf{J}_{ij_S}$ and $\mathbf{G}_{ij_S}$ are for \emph{structure} (because they embed how the scene should change). The jacobian is given by
+
+\begin{equation}
+    \mathbf{J} = \left ( \frac{\partial \mathbf{r}}{\partial \mathbf{k}} \right )_{2mn, 12m+3n} = \left [ \left \{ \frac{\partial r_i}{\partial k_j} \right \}_{(\textup{row} = i, \textup{col} = j)} \right ]
+\end{equation}
+
+This is expanded as follows
+
+\begin{equation}
+    \mathbf{J} = \begin{bmatrix}
+        (\mathbf{J}_{11_M})_{1,12} & 0_{1,12} & \cdots & 0_{1,12} & \parallel & (\mathbf{J}_{11_S})_{1,3} & 0_{1,3} & \cdots & 0_{1,3} \\
+        (\mathbf{G}_{11_M})_{1,12} & 0_{1,12} & \cdots & 0_{1,12} & \parallel & (\mathbf{G}_{11_S})_{1,3} & 0_{1,3} & \cdots & 0_{1,3} \\
+        (\mathbf{J}_{12_M})_{1,12} & 0_{1,12} & \cdots & 0_{1,12} & \parallel & 0_{1,3} & (\mathbf{J}_{12_S})_{1,3} & \cdots & 0_{1,3} \\
+        (\mathbf{G}_{12_M})_{1,12} & 0_{1,12} & \cdots & 0_{1,12} & \parallel & 0_{1,3} & (\mathbf{G}_{12_S})_{1,3} & \cdots & 0_{1,3} \\
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        (\mathbf{J}_{1n_M})_{1,12} & 0_{1,12} & \cdots & 0_{1,12} & \parallel & 0_{1,3} & 0_{1,3} & \cdots & (\mathbf{J}_{1n_S})_{1,3} \\
+        (\mathbf{G}_{1n_M})_{1,12} & 0_{1,12} & \cdots & 0_{1,12} & \parallel & 0_{1,3} & 0_{1,3} & \cdots & (\mathbf{G}_{1n_S})_{1,3} \\
+        
+        0_{1,12} & (\mathbf{J}_{21_M})_{1,12} & \cdots & 0_{1,12} & \parallel & (\mathbf{J}_{21_S})_{1,3} & 0_{1,3} & \cdots & 0_{1,3} \\
+        0_{1,12} & (\mathbf{G}_{21_M})_{1,12} & \cdots & 0_{1,12} & \parallel & (\mathbf{G}_{21_S})_{1,3} & 0_{1,3} & \cdots & 0_{1,3} \\
+        0_{1,12} & (\mathbf{J}_{22_M})_{1,12} & \cdots & 0_{1,12} & \parallel & 0_{1,3} & (\mathbf{J}_{22_S})_{1,3} & \cdots & 0_{1,3} \\
+        0_{1,12} & (\mathbf{G}_{22_M})_{1,12} & \cdots & 0_{1,12} & \parallel & 0_{1,3} & (\mathbf{G}_{22_S})_{1,3} & \cdots & 0_{1,3} \\
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        0_{1,12} & (\mathbf{J}_{2n_M})_{1,12} & \cdots & 0_{1,12} & \parallel & 0_{1,3} & 0_{1,3} & \cdots & (\mathbf{J}_{2n_S})_{1,3} \\
+        0_{1,12} & (\mathbf{G}_{2n_M})_{1,12} & \cdots & 0_{1,12} & \parallel & 0_{1,3} & 0_{1,3} & \cdots & (\mathbf{G}_{2n_S})_{1,3} \\
+
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        
+        0_{1,12} & 0_{1,12} & \cdots & (\mathbf{J}_{m1_M})_{1,12} & \parallel & (\mathbf{J}_{m1_S})_{1,3} & 0_{1,3} & \cdots & 0_{1,3} \\
+        0_{1,12} & 0_{1,12} & \cdots & (\mathbf{G}_{m1_M})_{1,12} & \parallel & (\mathbf{G}_{m1_S})_{1,3} & 0_{1,3} & \cdots & 0_{1,3} \\
+        0_{1,12} & 0_{1,12} & \cdots & (\mathbf{J}_{m2_M})_{1,12} & \parallel & 0_{1,3} & (\mathbf{J}_{m2_S})_{1,3} & \cdots & 0_{1,3} \\
+        0_{1,12} & 0_{1,12} & \cdots & (\mathbf{G}_{m2_M})_{1,12} & \parallel & 0_{1,3} & (\mathbf{G}_{m2_S})_{1,3} & \cdots & 0_{1,3} \\
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        0_{1,12} & 0_{1,12} & \cdots & (\mathbf{J}_{mn_M})_{1,12} & \parallel & 0_{1,3} & 0_{1,3} & \cdots & (\mathbf{J}_{mn_S})_{1,3} \\
+        0_{1,12} & 0_{1,12} & \cdots & (\mathbf{G}_{mn_M})_{1,12} & \parallel & 0_{1,3} & 0_{1,3} & \cdots & (\mathbf{G}_{mn_S})_{1,3}      
+        \end{bmatrix}
+\end{equation}
+
+The jacobian shown above has $2mn$ rows ($2n$ rows, goes $m$ times; this is purely because we constructed $\mathbf{r}$ that way). It has $12m+3n$ columns. The first $12m$ columns are before the $\parallel$ and are for the motion part (estimating $\mathbf{P}$, from which we'll get our camera poses) and the remaining $3n$ columns are for the structure part (estimating $\mathbf{X}$ from which we'll get the environment's map).
+
+\paragraph*{Optimization}
+
+The optimization of this could (theoretically) be done using an LM optimizer, with the update equations being
+
+\begin{align}
+    \delta \mathbf{k} &= - \underbrace{\left ( \mathbf{J^\top J} + \lambda \mathbf{I} \right )^{-1}}_{(12m+3n, 12m+3n)} \; \underbrace{\mathbf{J^\top}}_{(12m+3n, 2mn)} \; \underbrace{\mathbf{r}}_{(2mn, 1)}
+    \nonumber \\
+    \mathbf{k} &\leftarrow \mathbf{k} + \delta \mathbf{k}
+\end{align}
+
+However, if the values of $m$ and $n$ are large, this is best left to a \emph{sparse optimization library} (sparse because most elements in $\mathbf{J}$ are zeros). Notice how only two paramters in each line are non-zero (every row has only 15 non-zero entries), we can optimize by operating on these values only (it'll give storage and computational advantages). Also, the first term of $\delta \mathbf{k}$ will also be mostly sparse (there are many decomposition methods that give direct inverse for such sparse matrices). However, we have to provide initial estimates for the optimization.
+
+\paragraph*{Initial Estimates}
+
+Usually, estimates from sensors such as GPS, Odometry and IMU give the approximate robot location. Using triangulation, one can get the initial guesses for the 3D points. The projection matrix can be guessed using the DLT method (if applicable), else if the cameras are calibrated, then we only need to estimate the camera pose to get initial estimates (which our sensors would directly give).
+
+However, if there are no other sensors, then one could estimate $\mathbf{F}$ through the first set of images (using the 8-point algorithm). Initial estimates can be guessed by considering changes in the successive frames only, and by performing certain decomposition procedures on $\mathbf{F}$ (that allow us to extract rough estimates of $\mathbf{K}$, and incremental $\mathbf{b}$ and $\mathbf{R}$). However, we will not escape the issue of scale this way (the entire scene and setup can be scaled and there will be no difference in the results). We will get solution upto a similarity transform. Certain scale constraints can be applied to overcome such issues (we'll need 7 constraints). An approximated baseline length could yield better results for the starting point.
+
+Earlier, a method to estimate $\mathbf{P}$ using RANSAC was discussed. If that works well, we could use triangulation (see where the rays approximately intersect in the real world) and use those estimates as the starting points. This is probably our best shot (without any other sensor data).
+
+However, all these vision techniques for initial guess will fail if the correspondences are not found or when there is very high motion blur.

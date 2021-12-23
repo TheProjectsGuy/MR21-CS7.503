@@ -4,9 +4,6 @@
 # Ignore test items
 /test*
 
-# Ignore the End Semester (for now)
-/End Semester/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

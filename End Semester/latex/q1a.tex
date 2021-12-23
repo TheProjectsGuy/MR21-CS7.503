@@ -1,0 +1,36 @@
+% !TeX root = q1.tex
+
+\subsection{Epipole condition}
+
+\subsubsection*{Epipolar line}
+
+Say we have a point $x'$ in one image, and we want to find the correlating point $x''$ in a second image. Assume that we have $\mathbf{F}$ (the fundamental matrix) relating the two images. This matrix can be obtained from methods like the eight-point correspondence where eight non-coplaner point correspondences in the two images are known.
+
+Referring to figure \ref{fig:q1-epipolar-geometry}, our job would become much easier if we know the \textit{epipolar line} of $x'$ in the second image (the line $e''x''$). Let us call this line $l''$ (since it's in the second image).
+
+For a true $x''$ to lie on $l''$, it must satisfy $x'' \cdot l'' = x''^\top l'' = l''^\top x'' = 0$. From equation \ref{eq:q1-fmat-eq}, we know that $x' \mathbf{F} x'' = 0$. Matching the two results, we get $l''^\top = x' \mathbf{F} \Rightarrow l'' = \mathbf{F}^\top x' $ as the equation of the epipolar line in the second image (of the point $x'$ in the first image). Now, a search along this line in the second image has higher chances of yielding the true $x''$.
+
+\subsubsection*{Epipoles}
+
+We know that the epipolar line in the second image (of a point $x'$ in the first image) is given by $l'' = \mathbf{F}^\top x'$.
+
+We know that the epipole $e''$ (in the second image) is the projection of $O_1$ in the second image. That is $e'' = \mathbf{P}'' X_{O''}$ (where $\mathbf{P}'' = \mathbf{K}'' \mathbf{R}'' \left [ \mathbf{I} \mid -\mathbf{X}_{O''} \right ]$ is the second camera's projection matrix). We also know that the epipole $e''$ lies on line $l''$, since all epipolar lines intersect at the epipoles (this is seen by considering another epipolar plane with a 3D point $Y$ in figure \ref{fig:q1-epipolar-geometry}). We therefore have $l''^\top e'' = 0$.
+
+For any point $x'$ in the first image, there will be an epipolar line $l''$ in the second image. We therefore have
+
+\begin{equation}
+    l''^\top e'' = \left ( \mathbf{F}^\top x' \right )^\top e'' = x'^\top \mathbf{F} e'' = \left ( \mathbf{F} e'' \right )^\top x' = 0
+    \label{eq:q1a-epipole-eq}
+\end{equation}
+
+We have two conditions: $x'$ can be any valid point in image 1 (in homogeneous coordinates) \textit{and} equation \ref{eq:q1a-epipole-eq} always has to hold true. The only possibility where both these conditions hold true is when $\left ( \mathbf{F} e'' \right )^\top = \mathbf{0}^\top$ (it is a row of three zeros). Therefore, we have
+
+\begin{equation}
+    \left ( \mathbf{F} e'' \right )^\top = \mathbf{0}^\top
+    \Rightarrow
+    \mathbf{F} e'' = \mathbf{0}
+    \label{eq:q1a-result}
+\end{equation}
+
+\noindent
+We therefore get $\mathbf{F} e'' = \mathbf{0}$ where $e''$ is the epipole of the first camera seen in the second image. In other words, the epipole $e''$ is the null space of matrix $\mathbf{F}$. This can be found by obtaining the eigenvector with the least (ideally zero) eigenvalue.

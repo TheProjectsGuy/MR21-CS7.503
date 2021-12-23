@@ -1,0 +1,50 @@
+% !TeX root = q2.tex
+\subsection{Homography relation for pure rotation}
+
+A camera's projection equation can be given as (revisit equation \ref{eq:q1-camera-projection})
+
+\begin{equation}
+    \mathbf{x} = \mathbf{KR} [ \mathbf{I} \mid - \mathbf{X}_O ] \; \mathbf{X}
+\end{equation}
+
+Where $\mathbf{K}$ is the camera intrinsic matrix, $\mathbf{R}$ is the rotation matrix of the camera (expressed in the real world coordinates), $\mathbf{X}_O$ is the origin of the camera's projection center and the point $\mathbf{X}$ is the point in scene expressed in homogeneous coordinates. The point $\mathbf{x}$ is the location of the point in the projected image plane (also in homogeneous coordinates).
+
+Note that since there is a dimansion lost ($\mathbf{x}$ is $\mathbb{P}^2$ whereas $\mathbf{X}$ is $\mathbb{P}^3$), we cannot truly recover the point $\mathbf{X}$ from just a pixel location $\mathbf{x}$ in the image. However, we can recover the \textit{line} passing through the camera center that yields the point $\mathbf{x}$ (for any point on that line). This line can be rotated and projected back as a pixel.
+
+Assume that the initial frame of the camera is given by $\{1\}$ (image pixels represented by $\mathbf{x}'$), the world frame is given by $\{0\}$ and the new camera frame (after \textit{strict} rotation) is given by $\{2\}$ (image pixels represented by $\mathbf{x''}$). Writing the projection equations, we get
+
+\begin{align}
+    \mathbf{x}' = \mathbf{K} \, ^1_0\mathbf{R} [ \mathbf{I} \mid - _0\mathbf{X}_O ] \; _0\mathbf{X}
+    &&
+    \mathbf{x}'' = \mathbf{K} \, ^2_0\mathbf{R} [ \mathbf{I} \mid - _0\mathbf{X}_O ] \; _0\mathbf{X}
+    \label{eq:q2a-rot-cam-projeqs}
+\end{align}
+
+Note that the camera center and the point ($_0\mathbf{X}_O$ and $_0\mathbf{X}$ in $\mathbb{P}^3$) are represented in the world frame (frame $\{0\}$), and are therefore unchanged. Also note that the two poses of the camera are related as
+
+\begin{equation}
+    ^0_2\mathbf{R} = ^0_1\mathbf{R} \, ^1_2\mathbf{R}
+    \Rightarrow ^2_0\mathbf{R} = ^0_2\mathbf{R}^\top = ^1_2\mathbf{R}^\top \, ^0_1\mathbf{R}^\top 
+    \Rightarrow ^2_0\mathbf{R} = \, ^2_1\mathbf{R} \, ^1_0\mathbf{R}
+    \label{eq:q2a-rel-rotmat}
+\end{equation}
+
+Where $^2_1\mathbf{R}$ is $\{1\}$'s orientation expressed in $\{2\}$. Substituting the result of equation \ref{eq:q2a-rel-rotmat} in equation \ref{eq:q2a-rot-cam-projeqs}, and noting that we're dealing with homogeneous coordinates here (uniformly scaled values are the same), we get
+
+\begin{align}
+    \rightarrow& \mathbf{x}' = \mathbf{K} \, ^1_0\mathbf{R} [ \mathbf{I} \mid - _0\mathbf{X}_O ] \; _0\mathbf{X}
+    \Rightarrow \mathbf{K}^{-1} \mathbf{x}' \equiv \; ^1_0\mathbf{R} [ \mathbf{I} \mid - _0\mathbf{X}_O ] \; _0\mathbf{X}
+    \nonumber \\
+    \rightarrow& \mathbf{x}'' = \mathbf{K} \, ^2_0\mathbf{R} [ \mathbf{I} \mid - _0\mathbf{X}_O ] \; _0\mathbf{X}
+    \Rightarrow \mathbf{x}'' = \mathbf{K} \, ^2_1\mathbf{R} \, \left ( ^1_0\mathbf{R} \, [ \mathbf{I} \mid - _0\mathbf{X}_O ] \; _0\mathbf{X} \right )
+    \nonumber \\
+    \Rightarrow& \mathbf{x}'' = \, \mathbf{K} \; ^2_1\mathbf{R} \, \mathbf{K}^{-1} \mathbf{x}' = \mathbf{H} \, \mathbf{x}'
+    \qquad \textup{where} \; \mathbf{H} = \mathbf{K} \; ^2_1\mathbf{R} \, \mathbf{K}^{-1}
+    \label{eq:q2a-rot-result}
+\end{align}
+
+The equation \ref{eq:q2a-rot-result} gives the resulting homography $\mathbf{H}$ (for pure rotation), relating pixels $\mathbf{x}'$ in first image to pixels $\mathbf{x}''$ in the second image.
+
+When there is a camera translation involved, then this \textbf{does not} hold. Precisely because the camera projection center has moved (it will no longer remain $_0\mathbf{X}_O$, it'll become something else). The substitution for $\mathbf{x}'$ done in \ref{eq:q2a-rot-result} will not hold good.
+
+Geometrically, since we've moved, the line $\mathbf{K}^{-1} \mathbf{x}'$ will no longer project to a single point $\mathbf{x}''$ in the new image. Instead, this line will project to another (special) line in the new image (called the \textit{epipolar line}, see figure \ref{fig:q1-epipolar-geometry}). We will then not be able to generate a unique $\mathbf{x}''$ (note that the task here is to \textit{generate} a new image, not correspond).

@@ -1,0 +1,139 @@
+% !TeX root = main.tex
+\section{Camera Calibration}
+
+\subsection{DLT Algorithm}
+
+The \textbf{Direct Linear Transform} is a method to extract a homogeneous relation between corresponding points. In the context of camera calibration, the aim is to estimate the camera extrinsic and intrinsic parameters in the form of the projection matrix. For this, we are given the point correspondences (pairs of relations, relating the 3D point coordinates in the real world with the 2D image coordinates). That is, we're given a set of $\mathbf{X}_i \leftrightarrow \mathbf{x}_i = \left [ X_i, Y_i, Z_i, 1 \right ] \leftrightarrow \left [ x_i, y_i, 1 \right ]$ as correspondences. Note that the equation for projection is given by
+
+\begin{equation}
+    \mathbf{x}_i = \mathbf{K} \mathbf{R} \left [ \mathbf{I} \mid - \mathbf{X}_o \right ] \; \mathbf{X}_i
+    \Rightarrow \begin{bmatrix}
+    x_i \\ y_i \\ w_i
+    \end{bmatrix} = \mathbf{K} \mathbf{R} \left [ \mathbf{I} \mid - \mathbf{X}_o \right ] \begin{bmatrix}
+    X_i \\ Y_i \\ Z_i \\ W_i
+    \end{bmatrix} = \mathbf{P} \begin{bmatrix}
+    X_i \\ Y_i \\ Z_i \\ W_i
+    \end{bmatrix}
+    \label{eq:q3-cam-proj}
+\end{equation}
+
+Where $\mathbf{P} = \mathbf{K} \mathbf{R} \left [ \mathbf{I} \mid - \mathbf{X}_o \right ]$ is a 3-by-4 camera projection matrix. This projection equation is rearranged into a form where finding the null space (or approximate) gives the resultant projection matrix as a vector. We can do this form conversion as shown below
+
+\begin{align}
+    \mathbf{x}_i &= \mathbf{P} \mathbf{X}_i \Rightarrow \begin{bmatrix}
+        u \\ v \\ w
+        \end{bmatrix} = \begin{bmatrix}
+        p_{11} & p_{12} & p_{13} & p_{14} \\
+        p_{21} & p_{22} & p_{23} & p_{24} \\
+        p_{31} & p_{32} & p_{33} & p_{34}
+        \end{bmatrix} \begin{bmatrix}
+        X \\ Y \\ Z \\ 1
+        \end{bmatrix} = \begin{bmatrix}
+        \mathbf{a}^\top \\ \mathbf{b}^\top \\ \mathbf{c}^\top
+        \end{bmatrix} \mathbf{X}_i \equiv \begin{bmatrix}
+            x_i \\ y_i \\ 1
+        \end{bmatrix}
+    \nonumber \\
+    \rightarrow
+    x_i &= \frac{\mathbf{a}^\top \mathbf{X}_i}{\mathbf{c}^\top \mathbf{X}_i}
+    \Rightarrow x_i \, \mathbf{c}^\top \mathbf{X}_i = \mathbf{a}^\top \mathbf{X}_i
+    \Rightarrow - \mathbf{X}_i^\top \mathbf{a} + x_i \, \mathbf{X}_i^\top \mathbf{c} = 0
+    \Rightarrow \begin{bmatrix}
+        - \mathbf{X}_i^\top & \mathbf{0}^\top & x_i \, \mathbf{X}^\top_i
+        \end{bmatrix}_{1, 12} \begin{bmatrix}
+        \mathbf{a} \\ \mathbf{b} \\ \mathbf{c}
+        \end{bmatrix}_{12, 1} = 0
+    \nonumber \\
+    \rightarrow
+    y_i &= \frac{\mathbf{b}^\top \mathbf{X}_i}{\mathbf{c}^\top \mathbf{X}_i}
+    \Rightarrow y_i \, \mathbf{c}^\top \mathbf{X}_i = \mathbf{b}^\top \mathbf{X}_i
+    \Rightarrow - \mathbf{X}^\top_i \mathbf{b} + y_i \, \mathbf{X}^\top_i \mathbf{c} = 0
+    \Rightarrow \begin{bmatrix}
+        \mathbf{0}^\top & - \mathbf{X}^\top_i & y_i \, \mathbf{X}^\top_i
+        \end{bmatrix}_{1, 12} \begin{bmatrix}
+        \mathbf{a} \\ \mathbf{b} \\ \mathbf{c}
+        \end{bmatrix}_{12, 1} = 0
+    \nonumber \\
+    &\Rightarrow \begin{bmatrix}
+        - \mathbf{X}_i^\top & \mathbf{0}^\top & x_i \, \mathbf{X}^\top_i \\
+        \mathbf{0}^\top & - \mathbf{X}^\top_i & y_i \, \mathbf{X}^\top_i
+        \end{bmatrix}_{2, 12} \begin{bmatrix}
+        \mathbf{a} \\ \mathbf{b} \\ \mathbf{c}
+        \end{bmatrix}_{12, 1} = \begin{bmatrix}
+        0 \\ 0
+        \end{bmatrix}_{2, 1} \Rightarrow \begin{bmatrix}
+        \mathbf{q}_{x_i}^\top \\
+        \mathbf{q}_{y_i}^\top
+        \end{bmatrix} \begin{bmatrix}
+        \mathbf{a} \\ \mathbf{b} \\ \mathbf{c}
+        \end{bmatrix} = \begin{bmatrix}
+        0 \\ 0
+        \end{bmatrix}
+    \label{eq:q3-cam-proj-resolved}
+\end{align}
+
+The equation \ref{eq:q3-cam-proj-resolved} basically yields two equations for every corresponding point $\mathbf{X}_i \leftrightarrow \mathbf{x}_i$. Since $\mathbf{P}$ has 12 elements (with 11 Degrees of Freedom, since it's a homogeneous matrix), we need \textit{at least} six correspondences. 
+
+We get the following equation by stacking all the $m$ correspondences
+
+\begin{equation}
+    \begin{bmatrix}
+        \mathbf{q}_{x_1}^\top \\
+        \mathbf{q}_{y_1}^\top \\
+        \vdots \\
+        \mathbf{q}_{x_i}^\top \\
+        \mathbf{q}_{y_i}^\top \\
+        \vdots \\
+        \mathbf{q}_{x_m}^\top \\
+        \mathbf{q}_{y_m}^\top
+        \end{bmatrix}_{2m, 12} \begin{bmatrix}
+        \mathbf{a} \\ \mathbf{b} \\ \mathbf{c}
+        \end{bmatrix}_{12, 1} = \begin{bmatrix}
+        0 \\ 0 \\
+        \vdots \\
+        0 \\ 0 \\
+        \vdots \\
+        0 \\ 0
+        \end{bmatrix}_{2m, 1}
+    \Rightarrow \mathbf{Q}_{(2m, 12)} \begin{bmatrix}
+        \mathbf{a} \\ \mathbf{b} \\ \mathbf{c}
+        \end{bmatrix}_{(12, 1)} = \mathbf{0}_{(2m, 1)}
+    \Rightarrow \mathbf{Q} \, \mathbf{h} = \mathbf{0}
+    \label{eq:q3-dlt-equs}
+\end{equation}
+
+Note that $m$ should at least be $6$ for a valid null-space (however, that's not enough as we'll see later). The vector $\mathbf{h}$ in equation \ref{eq:q3-dlt-equs}, which contains the rows of $\mathbf{P}$ stacked as a column vector, can basically be estimated as the null space of $\mathbf{Q}$. In reality, the equation \ref{eq:q3-dlt-equs} rarely holds exactly true. There's always noise in observations, loss due to digital sampling, etc. due to which the value is a small number (close to zero).
+
+Hence, the aim (in finding $\mathbf{h}$) could be to \textit{minimize} $\left \| \mathbf{Q \, h} \right \|$ (the norm). In order to find a unique $\mathbf{h}$, as well as to avoid the trivial solution of $\mathbf{h} = \mathbf{0}$, we can add a constraint of $\left \| \mathbf{h} \right \| = 1$. This minimization can be done through \textit{Singular Value Decomposition}. We get the solution of $\mathbf{h}$ being the last column of $\mathbf{V}$ (the right singular vectors; eigenvectors of $\mathbf{Q^\top \, Q}$).
+
+\subsection{Solution through SVD}
+
+Performing the SVD of $\mathbf{Q}$, we get $\mathbf{Q} = \mathbf{U D V^\top}$ where $\mathbf{D}$ is a diagonal matrix. The new optimization objective becomes to minimize $\left \| \mathbf{U D V^\top \, h} \right \|$ with the constraint $\left \| \mathbf{h} \right \| = 1$.
+
+This objective can be modified, knowing that $\mathbf{U}$ and $\mathbf{V}$ are orthogonal matrices, as follows
+
+\begin{align}
+    \textup{min}& \left \| \mathbf{Q \, h} \right \|
+    &&
+    \left \| \mathbf{h} \right \| = 1
+    \nonumber \\
+    \Rightarrow \textup{min}& \left \| \mathbf{U D V^\top \, h} \right \|
+    &&
+    \left \| \mathbf{h} \right \| = \left \| \mathbf{V^\top \, h} \right \| = \left \| \mathbf{y} \right \| = 1 \nonumber \\
+    \Rightarrow \textup{min}& \left \| \mathbf{D \, y} \right \|
+    &&
+    \left \| \mathbf{y} \right \| = 1
+    \nonumber
+\end{align}
+
+Note that $\mathbf{D \, y}$ will just be a differently scaled multiples of the singular values of $\mathbf{Q}$. Hence, the minimum of $\left \| \mathbf{D \, y} \right \|$ will be the smallest singular value (the constraint is $\left \| \mathbf{y} \right \| = 1$). We get the smallest singular value in the norm when $\mathbf{y}_{(12, 1)} = \left [ 0, 0, \cdots  , 0, 1 \right ]^\top$.
+
+We know $\mathbf{V^\top \, h} = \mathbf{y} \Rightarrow \mathbf{h} = \mathbf{V \, y}$. Putting $\mathbf{y} = \left [ 0, 0, \cdots  , 0, 1 \right ]^\top$ basically means that $\mathbf{h}$ is the \textit{last column} of $\mathbf{V}$. Note that $\mathbf{V}$ is formed by the eigenvectors of $\mathbf{Q^\top \, Q}$ and the last column has the smallest corresponding eigenvalue (they're related to singular values in the same manner).
+
+\subsection{Points on a plane}
+
+Note that in equation \ref{eq:q3-cam-proj-resolved} the value $\mathbf{X}_i^\top = \left [ X_i \;\; Y_i \;\; Z_i \;\; 1\right ]$. The equation of a plane (in 3D) is given by $\alpha X + \beta Y + \gamma Z + \delta = 0$. This means that if all points $\mathbf{X}_i$ lie on a plane, it'll be possible to resolve columns of $\mathbf{Q}$ as a linear combination of other columns (say, resolve $Z_i$ column as a linear combination of $X_i$, $Y_i$ and $1$ columns). 
+
+This means that the matrix $\mathbf{Q}$ will loose rank (note that it'll loose rank by multiples of $2$, since the equations are in $x, y$ pairs) and therefore no longer yield a vector $\mathbf{h}$ that can be uniquely resolved. If $\mathbf{Q}$ is full rank, then the solutions for $\mathbf{h}$ lie on a 1 DoF line in a 12 DoF space. This space will degenerate and the solutions for $\mathbf{h}$ will be \textit{many}, $\mathbf{Q}$ loses rank. Hence, it is essential that we have at least 6 points and that they do \textbf{not} lie on a planar surface.
+
+Even in the step for doing SVD, if $\mathbf{Q}$ is rank deficient (as discussed in the condition earlier), then the last column of $\mathbf{V}$ will be zeros: the least singular value (the last diagonal entry of $\mathbf{D}$) will become $0$, therefore the last row of $\mathbf{V}^\top$ will be zeros or non-existent (depending on the implementation of SVD). Hence, solving for $\mathbf{h}$ will then become impossible.

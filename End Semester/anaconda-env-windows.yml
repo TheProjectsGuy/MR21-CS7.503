@@ -1,0 +1,21 @@
+name: mr-cs7-503
+channels:
+  - open3d-admin
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8.0
+  - open3d
+  - numpy
+  - sympy
+  - matplotlib
+  - seaborn
+  - scipy
+  - pandas
+  - opencv
+  - pylint
+  - jupyterlab
+  - nbconvert
+  - pip:
+    - jupyter-http-over-ws
+    - nbconvert[webpdf]

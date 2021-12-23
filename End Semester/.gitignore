@@ -1,0 +1,12 @@
+# Ignore the binary data
+code/data/*.bin
+
+# Ignore the Anaconda Environment file
+anaconda-env.yml
+
+# Ignore test files
+test/
+
+# Ignore the HTML and PDF of the code
+code/MR2021_EndSem*.html
+code/MR2021_EndSem*.pdf
