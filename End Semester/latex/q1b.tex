@@ -1,0 +1,30 @@
+% !TeX root = q1.tex
+\subsection{Fundamental Matrix relations}
+
+Equation \ref{eq:q1-fmat-eq} gives the fundamental matrix relating image 1 to image 2 (simply because point $x'$ in image 1 comes before point $x''$ which is in image 2). Transposing it gives
+
+\begin{equation}
+    (x'^\top)_{1,3} \, \mathbf{F}_{3,3} \, (x'')_{3, 1} = 0 \Rightarrow \left ( x'^\top \mathbf{F} x'' \right )^\top = 0
+    \Rightarrow x''^\top \mathbf{F}^\top x' = 0
+    \label{eq:q1b-result-1}
+\end{equation}
+
+Therefore, the fundamental matrix relating the second image to the first is given by the \textit{transpose}. That is, if $^1_2\mathbf{F} = \mathbf{F}$, then $^2_1\mathbf{F} = \mathbf{F}^\top$.
+
+This difference mainly arises from the derivation of \ref{eq:q1-fmat-eq}. The condition on the triple product still holds true, even if we swap $O_1$ and $O_2$. This is equivalent to centering the equations about the second camera / image instead of the first. We can prove this as follows
+
+\begin{align}
+    \left \langle O_2 X \;\; O_2 O_1 \;\; O_1 X \right \rangle =& \left ( \mathbf{R}''^{-1} \mathbf{K}''^{-1} x'' \right ) \cdot \left ( -b \times \left ( \mathbf{R}'^{-1} \mathbf{K}'^{-1} x' \right ) \right ) =
+        \left ( \mathbf{R}''^{-1} \mathbf{K}''^{-1} x'' \right )^\top \left [ -b \right ]_\times \left ( \mathbf{R}'^{-1} \mathbf{K}'^{-1} x' \right )
+    \nonumber \\
+    =& x''^\top \left ( \mathbf{K}''^{-\top} \mathbf{R}''^{-\top} \left [ -b \right ]_\times \mathbf{R}'^{-1} \mathbf{K}'^{-1} \right ) x' = x''^\top \, ^2_1\mathbf{F} x' = 0
+\end{align}
+
+Note that $\mathbf{R}^\top = \mathbf{R}^{-1}$ (for both $\mathbf{R}'$ and $\mathbf{R}''$) since they're orthogonal matrices. Also note that $\left [ -b \right ]_\times = - \left [ b \right ]_\times = \left [ b \right ]_\times^\top$ since it is a skew symmetric matrix.
+
+\begin{equation}
+    ^2_1\mathbf{F} = \left ( \mathbf{K}''^{-\top} \mathbf{R}''^{-\top} \left [ -b \right ]_\times \mathbf{R}'^{-1} \mathbf{K}'^{-1} \right ) = \left ( \mathbf{K}'^{-\top} \mathbf{R}'^{-\top} \left [ b \right ]_\times \mathbf{R}''^{-1} \mathbf{K}''^{-1} \right )^\top = \; ^1_2\mathbf{F}^\top
+    \label{eq:q1b-result-2}
+\end{equation}
+
+The equations \ref{eq:q1b-result-1} and \ref{eq:q1b-result-2} formally prove the transpose relationship.

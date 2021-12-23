@@ -36,3 +36,5 @@ Other
 
 - [Notion pages](https://saishubodh.notion.site/Mobile-Robotics-2020-Students-Page-0b65a9c20edd4081978f4ffad917febb#91cea224c5a54a61a157e1933fa94819) for Mobile Robotics 2020
 - Ethan Eade material on [optimization](https://ethaneade.com/optimization.pdf) (for Gauss-Newton, Levenberg, Levenberg-Marquardt methods)
+
+[![Developer: TheProjectsGuy](https://img.shields.io/badge/Developer-TheProjectsGuy-blue)](https://github.com/TheProjectsGuy)

@@ -1,2 +1,11 @@
 # Ignore the data folder
 data/
+# Ignore pickle files
+*.pkl
+# Ignore the test folder
+test/
+# Ignore environment file
+anaconda-env.yml
+
+# Ignore data downloaded for Bundle Adjustment
+questions/problem-*.bz2

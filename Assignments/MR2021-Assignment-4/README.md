@@ -20,3 +20,5 @@ It is suggested that you use VSCode to run the cells, but they should work using
 ## References
 
 The references are linked in the description of every task.
+
+[![Developer: TheProjectsGuy](https://img.shields.io/badge/Developer-TheProjectsGuy-blue)](https://github.com/TheProjectsGuy)

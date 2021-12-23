@@ -1,0 +1,66 @@
+% !TeX root = q4.tex
+
+\subsection{SAM Optimization in SE2}
+
+Assuming that other than the observations and poses, nothing else is given.
+
+Let's say that we have $m$ observations. That is, we have $m$ transformations $^1_0\mathbf{T}, \; ^2_0\mathbf{T}, \; \cdots, ^m_0\mathbf{T}$, each being a 3-by-3 homogeneous transformation matrix (space is SE-2). For \textit{each} observation, say that we observe the $n$ 2D points $_0\mathbf{x}_1, \; _0\mathbf{x}_2, \; \cdots ,\; _0\mathbf{x}_n$ in the particular observation (each point is a 3-by-1 homogeneous vector in $\mathbb{R}^2$). This smoothing problem becomes a \textbf{least squares optimization problem} (without any motion or sensor model).
+
+Our goal is to find / smoothen the transforms and the map using just this data. This is done by minimizing a loss function, using a jacobian. The loss that we want to minimize is the error in point transformations across all observations. Precisely, the error is given by
+
+\begin{equation}
+    L = \sum_{i=1}^m \sum_{j = 1}^n \left \| _i\mathbf{x}_j - \, ^i_0\mathbf{T} \, _0\mathbf{x}_j \right \|^2 = \sum_{i=1}^m \sum_{j = 1}^n \left \| \mathbf{r}_{ij} \right \|^2_2
+\end{equation}
+
+Where $_0\mathbf{x}_j$ is the map. We transform it to the $i$th frame and see the difference from what we actually observed. We want to minimize this error across all such transformations (across all observations). Each observation / transform has 3 variables associateed with it ($x, y, \theta$ in the SE-2 plane). Each point has two observations to optimize (the $x, y$ value on map). Hence, the equation has $3m+2n$ parameters to optimize. We ultimately have $2n$ equations over $m$ frames, that is $2mn$ equations and $3m+2n$ parameters to optimize.
+
+The function for point $_i\mathbf{x}_j$ (point $j$ in frame / observation $i$) can be written as
+
+\begin{equation}
+    _i\mathbf{x}_j  = \mathbf{f}_{ij} \left ( \mathbf{R}_i, \mathbf{t}_i, \; _0\mathbf{x}_j \right )
+\end{equation}
+
+Note that the residual and the above function can be written in terms of minimal parameters of $\xi = (x, y, \theta)$ instead of the transform $\mathbf{T}$ (else we'll be solving for $9m+2n$ variables over a complex manifold). The residual vector is $\mathbf{r}_{ij}(\mathbf{T}(\xi_i), \mathbf{x}_j)$ and has the shape $2mn, 1$ ($x, y$ equations for each of $n$ point in each of $m$ observations). Each residual has $5$ parameters ($3$ for $\xi$ and $2$ for point). For shorthand, consider $\mathbf{T}_i = ^i_0\mathbf{T}$. The Jacobian is given by
+
+\begin{equation}
+    \left [ \mathbf{J}_{i, j} \right ]_{2,5} =
+    \left [ \underbrace{\left ( \frac{\partial \mathbf{r}_{ij}}{\partial \mathbf{T}_i} \frac{\partial \mathbf{T}_i}{\partial \xi_i} \right )_{2, 3}}_{\textup{Localization}} 
+    \;\;
+    \underbrace{\left ( \frac{\partial \mathbf{r}_{ij}}{\partial \mathbf{x}_j} \right )_{2, 2}}_{\textup{Mapping}} \right ]_{2, 5} = \left [ \mathbf{J}_{ij_L} \mid \mathbf{J}_{ij_M} \right ]
+\end{equation}
+
+Therefore the Jacobian for the whole problem will be of shape $3m + 2n, 2mn$ (since it's a derivative of residual w.r.t. all parameters).
+
+\begin{equation}
+    \mathbf{J} = \begin{bmatrix}
+        (\mathbf{J}_{11_L})_{2,3} & 0_{2,3} & \cdots & 0_{2,3} & \parallel & (\mathbf{J}_{11_M})_{2,2} & 0_{2,2} & \cdots & 0_{2,2} \\
+        (\mathbf{J}_{12_L})_{2,3} & 0_{2,3} & \cdots & 0_{2,3} & \parallel & 0_{2,2} & (\mathbf{J}_{12_M})_{2,2} & \cdots & 0_{2,2} \\
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        (\mathbf{J}_{1n_L})_{2,3} & 0_{2,3} & \cdots & 0_{2,3} & \parallel & 0_{2,2} & 0_{2,2} & \cdots & (\mathbf{J}_{1n_M})_{2,2} \\
+        
+        0_{2,3} & (\mathbf{J}_{21_L})_{2,3} & \cdots & 0_{2,3} & \parallel & (\mathbf{J}_{21_M})_{2,2} & 0_{2,2} & \cdots & 0_{2,2} \\
+        0_{2,3} & (\mathbf{J}_{22_L})_{2,3} & \cdots & 0_{2,3} & \parallel & 0_{2,2} & (\mathbf{J}_{22_M})_{2,2} & \cdots & 0_{2,2} \\
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        0_{2,3} & (\mathbf{J}_{2n_L})_{2,3} & \cdots & 0_{2,3} & \parallel & 0_{2,2} & 0_{2,2} & \cdots & (\mathbf{J}_{2n_M})_{2,2} \\
+
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        
+        0_{2,3} & 0_{2,3} & \cdots & (\mathbf{J}_{m1_L})_{2,3} & \parallel & (\mathbf{J}_{m1_M})_{2,2} & 0_{2,2} & \cdots & 0_{2,2} \\
+        0_{2,3} & 0_{2,3} & \cdots & (\mathbf{J}_{m2_L})_{2,3} & \parallel & 0_{2,2} & (\mathbf{J}_{m2_M})_{2,2} & \cdots & 0_{2,2} \\
+        \vdots & \vdots & \vdots & \vdots & \parallel & \vdots & \vdots & \vdots & \vdots \\
+        0_{2,3} & 0_{2,3} & \cdots & (\mathbf{J}_{mn_L})_{2,3} & \parallel & 0_{2,2} & 0_{2,2} & \cdots & (\mathbf{J}_{mn_M})_{2,2}        
+        \end{bmatrix}_{2mn, 3m+2n}
+\end{equation}
+
+Note that the $\parallel$ in the middle is just to separate out the localization ($3m$ columns in the left) and the mapping ($2m$ columns in the right). It is actually just a single matrix.
+
+If we're given more constraints, like odometry, motion model or sensor model, those equations too can be added to the list of constraints, residuals for them too can be computed and then they too can be brought into the Jacobian. Even loop closure equations can be brought in that way.
+
+Ultimately, our state updates can be given as
+
+\begin{equation}
+    \underbrace{\delta \psi}_{3m+2n, 1} = - \underbrace{\mathbf{(J^\top \Omega J)}^{-1}}_{3m+2n, 3m+2n} \underbrace{\mathbf{J^\top \Omega^\top}}_{3m+2n, 2mn} \underbrace{\mathbf{r}}_{2mn, 1}
+\end{equation}
+
+Where $\delta \psi$ is the change to all localization and the mapping parameters (in the mentioned order). The new matrix $\mathbf{\Omega}$ is a diagonal matrix of shape $2mn, 2mn$. It is inverse of covariance of each equation / constraint. It can be through of as a confidence matrix ($i$th diagonal element shows the confidence of equation $i$).

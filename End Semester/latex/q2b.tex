@@ -1,0 +1,71 @@
+% !TeX root = q2.tex
+\subsection{Relating pixels b/w frames}
+
+Methods using which you can relate a pixel $\mathbf{x}'$ in image 1 (pixel $x_{i1}$ frame $I1$) to a pixel $\mathbf{x}''$ in image 2 (pixel $x_{j2}$ in frame $I2$) are described hereon.
+
+\subsubsection*{Fundamental Matrix}
+
+As described in equation \ref{eq:q1-fmat-eq}, the fundamental matrix relates two pixels in cases when we do \textit{not} know the camera intrinsic parameters (the cameras are uncalibrated). This relation is given by
+
+\begin{equation}
+    x'^\top \mathbf{F} x'' = 0
+    \qquad \textup{where} \;\, \mathbf{F} = \mathbf{K}'^{-\top} \mathbf{R}'^{-\top} \left [ b \right ]_\times \mathbf{R}''^{-1} \mathbf{K}''^{-1}
+\end{equation}
+
+Note that if the pixel lie on each other's epipoles (not necessarily mapping to the same point in the 3D world), even then the relation holds true. Therefore, we can note that
+
+\begin{quote}
+    If the pixels correspond to the same point, the equation for fundamental matrix holds true. But if the equation for fundamental matrix holds true, the pixels need not correspond to the same point in the 3D world.
+\end{quote}
+
+It is also important to note that this relation comes from epipolar geometry and the matrix $\mathbf{F}$ degenerates (becomes zeros) if the baseline $\mathbf{b}$ is zero (meaning that there is no translation).
+
+\subsubsection*{Essential Matrix}
+
+As described in equation \ref{eq:q1-emat-eq}, the essential matrix relates two pixels in cases when we \textit{know} the  camera intrinsic parameters $\mathbf{K}'$ and $\mathbf{K}''$ (cameras are calibrated). This relation is given by
+
+\begin{equation}
+    \left ( \mathbf{K}'^{-1} \mathbf{x}' \right )^\top \; \mathbf{E} \; \left ( \mathbf{K}''^{-1} \mathbf{x}'' \right ) = 0
+    \qquad \textup{where} \;\, \mathbf{E} = \mathbf{R}'^{-\top} \left [ b \right ]_\times \mathbf{R}''^{-1}
+\end{equation}
+
+This relation, like the fundamental matrix also comes from epipolar geometry (the same triple product equal to 0 condition). Therefore, it too holds true only when the baseline is non-zero (where there is translation between the two frames).
+
+\subsubsection*{Rotational homographies}
+
+If the cameras are calibrated (we know the intrinsics), and there has only been rotation (no translation) about the camera's projection center (from one view to another), then the fundamental and essential matrix degenerate. The relation is then derived by rotational homography described below
+
+\begin{equation}
+    \mathbf{x}'' = \mathbf{H} \, \mathbf{x}'
+    \qquad \textup{where} \; \mathbf{H} = \mathbf{K} \; ^2_1\mathbf{R} \, \mathbf{K}^{-1}
+\end{equation}
+
+This is equivaluent to projecting the rotated ray (formed by inverse projection of pixel $\mathbf{x}'$ in frame 1) into the frame 2 and getting the corresponding pixel.
+
+\subsubsection*{Stereo Pairs}
+
+Another interesting point to note is that when the cameras are arranged in a stereo pair, with there being no rotation and the baseline having a value only in X (only horizontal shift in the cameras), the fundamental (and essential) matrices reduce to skew-symmetric matrices and the epipolar lines become horizontal (the null space is only possible for horizontal lines).
+
+In this case, knowing the coordinates of the pixels $\mathbf{x}'$ and $\mathbf{x}''$ (as say: $x', y'$ and $x'', y''$), can yield us the 3D coordinates of the corresponding point (in the 3D world, if the pixels correspond to the same point). We need to know the focal length (say $c$) of the cameras for this (the cameras have to be calibrated) and the images need to be un-distorted (all lense effects removed). Also not that $y'' = y'$ (the images should be horizontally aligned).
+
+The point in the 3D world has the coordinates $X, Y, Z$, given by
+
+\begin{align}
+    Z = \frac{c \, B}{-(x''-x')}
+    &&
+    X = \frac{x' \, B}{-(x'' - x')}
+    &&
+    Y = \frac{y'+y''}{2} \frac{B}{-(x''-x')} = \frac{y' \, B}{-(x'' - x')}
+\end{align}
+
+The X offsets of the pixels make a special image called the disparity map. Note that this still is up to an affine transform, there can be scaling, rotation and translation in the point in the real 3D world. This can be resolved through correspondences.
+
+\subsubsection*{Correspondence search}
+
+If we're looking for correspondences (we have $\mathbf{x}'$ in first image and want to look for corresponding $\mathbf{x}''$ in the second image), the following methods could be useful
+
+\begin{enumerate}
+    \item If the cameras form a stereo pair, then searching along the same horizontal line will be enough.
+    \item If the fundamental matrix is known, the epipolar lines can be found and a linear search can be done.
+    \item Coreners can be detected on the image (using gradient kernels) and neighborhood searches can be done.
+\end{enumerate}

@@ -21,3 +21,5 @@ It is suggested that you use VSCode to run the cells, but they should work using
 
 - The point cloud for bunny is stored in [./resources/bunny.ply](./resources/bunny.ply)
 - The [./helpers/func.py](./helpers/func.py) was provided with the material. This is not altered in any significant way (the functions are the same as were given).
+
+[![Developer: TheProjectsGuy](https://img.shields.io/badge/Developer-TheProjectsGuy-blue)](https://github.com/TheProjectsGuy)
