@@ -19,6 +19,6 @@ It is suggested that you use VSCode to run the cells, but they should work using
 
 ## Data
 
-Please download all data from [here](https://iiitaphyd-my.sharepoint.com/personal/venkata_surya_students_iiit_ac_in/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fvenkata%5Fsurya%5Fstudents%5Fiiit%5Fac%5Fin%2FDocuments%2Fdata&originalPath=aHR0cHM6Ly9paWl0YXBoeWQtbXkuc2hhcmVwb2ludC5jb20vOmY6L2cvcGVyc29uYWwvdmVua2F0YV9zdXJ5YV9zdHVkZW50c19paWl0X2FjX2luL0VuWUFNYVRWSWhKSXR6S1lxdGFoRTMwQlJLQjZwNlVmSE4zVHlKenZvNk13MGc%5FcnRpbWU9c3AteHlLeUEyVWc) and store in the folder `data/data_pc_odom`. You'll have to adjust the variable names consisting the file / folder path for LiDAR and Odometry text file otherwise.
+Please download all data from [here](https://iiitaphyd-my.sharepoint.com/personal/venkata_surya_students_iiit_ac_in/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fvenkata%5Fsurya%5Fstudents%5Fiiit%5Fac%5Fin%2FDocuments%2Fdata&originalPath=aHR0cHM6Ly9paWl0YXBoeWQtbXkuc2hhcmVwb2ludC5jb20vOmY6L2cvcGVyc29uYWwvdmVua2F0YV9zdXJ5YV9zdHVkZW50c19paWl0X2FjX2luL0VuWUFNYVRWSWhKSXR6S1lxdGFoRTMwQlJLQjZwNlVmSE4zVHlKenZvNk13MGc%5FcnRpbWU9c3AteHlLeUEyVWc) and store in the folder `data/data_pc_odom`. You'll have to adjust the variable names consisting the file / folder path for LiDAR and Odometry text file otherwise. This data wasn't included in the ZIP file because of size constraints.
 
-This data wasn't included in the ZIP file because of size constraints.
+[![Developer: TheProjectsGuy](https://img.shields.io/badge/Developer-TheProjectsGuy-blue)](https://github.com/TheProjectsGuy)

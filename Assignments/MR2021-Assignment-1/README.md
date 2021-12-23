@@ -16,3 +16,5 @@ The submission can be found in the [Assignment-1.ipynb](./Assignment-1.ipynb) fi
 The anaconda environment used to run this notebook can be created using [anaconda-env.yml](./results/anaconda-env.yml) file (in results).
 
 It is suggested that you use VSCode to run the cells, but they should work using standard jupyter notebook also. All equations were created using [codecogs](https://www.codecogs.com/latex/eqneditor.php) and the rendering was tested and verified on VSCode.
+
+[![Developer: TheProjectsGuy](https://img.shields.io/badge/Developer-TheProjectsGuy-blue)](https://github.com/TheProjectsGuy)
