@@ -1,5 +1,9 @@
 # Mobile Robotics (Monsoon 2021) @ IIITH
 
+[Written Notes](https://iiitaphyd-my.sharepoint.com/:f:/g/personal/avneesh_mishra_research_iiit_ac_in/EjVqnfa8f7NNkjpliT77w5IBb_q0bBhPdKR_gXVBn52pYQ) | [Shubodh's Notion](https://saishubodh.notion.site/Mobile-Robotics-2020-Students-Page-0b65a9c20edd4081978f4ffad917febb)
+
+---
+
 A repository to store all items pertaining to course `Mobile Robotics`
 
 - Professor: [K. Madhava Krishna](https://www.iiit.ac.in/people/faculty/mkrishna/)
