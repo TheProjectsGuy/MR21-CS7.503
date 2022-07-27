@@ -1,6 +1,6 @@
 # Mobile Robotics (Monsoon 2021) @ IIITH
 
-[Written Notes](https://iiitaphyd-my.sharepoint.com/:f:/g/personal/avneesh_mishra_research_iiit_ac_in/EjVqnfa8f7NNkjpliT77w5IBb_q0bBhPdKR_gXVBn52pYQ) | [Shubodh's Notion](https://saishubodh.notion.site/Mobile-Robotics-2020-Students-Page-0b65a9c20edd4081978f4ffad917febb)
+[Written Notes](https://iiitaphyd-my.sharepoint.com/:f:/g/personal/avneesh_mishra_research_iiit_ac_in/EjVqnfa8f7NNkjpliT77w5IBb_q0bBhPdKR_gXVBn52pYQ) | [Course Notion](https://glib-leader-c5c.notion.site/Mobile-Robotics-2021-Students-Page-759a599bb6394247880c5d967b827320) | [Shubodh's Notion](https://saishubodh.notion.site/Mobile-Robotics-2020-Students-Page-0b65a9c20edd4081978f4ffad917febb)
 
 ---
 
